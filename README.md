@@ -38,6 +38,8 @@ The **CONFIG** type is used to handle configuration files, and functions similar
 
 The following is only an overview. The manpages provided with the library give more in-depth descriptions of the library and its functions (Also see the included examples).
 
+All functions, constants, and datatypes are provided by the <libreadconf.h> header.
+
 * **CONFIG \*config_open(const char \*path)**
 This function opens a file and returns a CONFIG associated with it.
 
