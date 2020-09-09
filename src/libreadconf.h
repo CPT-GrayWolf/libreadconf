@@ -19,6 +19,10 @@
 
 #define CONFIG_MAX_KEY 64
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 typedef struct config CONFIG;
 
 extern CONFIG *config_open(const char *path);
@@ -35,5 +39,9 @@ extern int config_next(CONFIG *cfg, char *name, char *data_buff, unsigned int bu
 extern void config_index_br(CONFIG *cfg, char **name, char **data, unsigned int index);
 extern void config_search_br(CONFIG *cfg, const char *name, char **data);
 extern void config_next_br(CONFIG *cfg, char **name, char **data);
+  
+#ifdef __cplusplus
+}
+#endif
 
 #endif
