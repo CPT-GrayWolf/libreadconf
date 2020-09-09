@@ -1,0 +1,125 @@
+.TH LIBREADCONF 3  "03 September 2020" "" "libreadconf Manual"
+.SH NAME
+libreadconf \- overview of the libradconf library and its usage
+.SH DESCRIPTION
+.SS Reasoning:
+The
+.I libreadconf
+library was designed to allow any application the capability to read standard, UNIX style, configuration files as simply as possible, while still providing enough functionality to allow more complx behaviour such as tags and configuration blocks.
+.PP
+It is, in the strictest sense, a dumb library. That is to say, it has no concept of a "correct" configuration, parsing whatever it happens to find. It depends, instead, on the end developer to implement any necessary syntax checking. This, however, also means that it uses, or is intended to use, very few resources when compared to more complex parsers.
+.PP
+It's design is based loosly on that of many functions described by the POSIX standard, as well as 
+.I stdio(3).
+It's syntax should be familiar to most programmers.
+.\"
+.SS Headers:
+The
+.I libreadconf
+library requires a single header file,
+.I <libreadconf.h>.
+.\"
+.SS Functions:
+The
+.I libreadconf
+library provides three basic types of functions.
+.PP
+File operations open, reopen, close, and read configuration files, and include the 
+.BR config_open(3),
+.BR config_fdopen(3),
+.BR config_reopen(3),
+.BR config_read(3),
+and
+.BR config_close(3)
+functions. These functions behave similarly to their
+.I stdio(3)
+counterparts, with the exception that they lack any "mode" option, as configurations are always opened as read-only.
+.PP
+Keylist operations act on the list of keys and values produced by
+.BR config_read(3)
+and adjust the position of the keylist such that all subsequent calls start at the item after that returned by the last call to any of the keylist functions, with the exception of
+.BR config_rewind(3),
+which serves only to return the keylist to it's beginning.
+These functions include
+.BR config_next(3),
+.BR config_search(3),
+their by-reference counterparts, and
+.BR config_rewind(3).
+.PP
+The 
+.I libreadconf
+library provides a single pair of index lookup functions. The 
+.BR config_index(3)
+function, and its by-reference counterpart provide an easy way of getting an item from a configuration's keylist without adjusting the list's current position. It is use much like how one would acess an array, with the elements indexed as '0..n-1'.
+.PP
+The key fetching functions of
+.I libreadconf
+.BR (config_next(3),
+.BR config_search(3),
+and
+.BR config_index(3))
+all have by-reference counterparts. These functions have the same name but are suffixed by "_br", and allow a programmer to directly access the memory internally allocated by
+.I libreadconf,
+skipping the need for any additional buffer checking, allocation, or aditional memory copies. However acessing this memory after closing a configuration has undefineed results.
+.\"
+.SS Types:
+The
+.I libreadconf
+library provides a single datatype know as CONFIG. This datatype is used in a manner similar to the
+.I stdio(3)
+FILE type, being declared as a pointer and handled internaly by the functions provided by
+.I libreadconf.
+.\"
+.SS Constants:
+The
+.I libreadconf
+library defines the following constants:
+.PP
+.BR CONFIG_KEY_MAX
+.PP
+This defines the maximum length that the
+.BR config_next(3),
+and
+.BR config_index(3)
+functions may return via
+.I name.
+If you have problems with keys exceeding this limit, you have bigger problems.
+.\"
+.SS Signals:
+As it is common for application, especially daemons, to register a signal handeler for SIGHUP to reload the application's configuration, it becomes important to block this signal when running any functions provided by
+.I libreadconf.
+Otherwise applications may not behave as expected.
+.PP
+For this reason,
+.I libreadconf
+blocks SIGHUP by deefault. Unless doing something unconventional with signal handling and configuration, no special actions are needed.
+.\"
+.SS Exaples:
+Examples will be made available in the public source repository for
+.I libreadconf.
+.SH NOTES
+Lazy reading is not yet implemented. Configurations must be read with
+.BR config_read(3)
+before being searched.
+.PP
+You may modify the data returned by by-reference functions, but beware of corrupting the heap.
+.PP
+You may find it necessary to check that a file can even fit in memory before attempting to read it when working in limited environments.
+.\"
+.SH BUGS
+Report bugs to Ian "Luna" Ericson at the
+.I libreadconf
+public repository, or to your local package maintainer (where applicable).
+.SH SEE ALSO
+.BR config_open(3),
+.BR config_read(3),
+.BR config_close(3),
+.BR config_rewind(3),
+.BR config_index(3),
+.BR config_search(3),
+.BR config_next(3),
+.BR config_index_br(3),
+.BR config_search_br(3),
+.BR config_next_br(3).
+.SH COPYRIGHT
+Copyright \(co 2020 Ian "Luna" Ericson and the Finity Software Group.
