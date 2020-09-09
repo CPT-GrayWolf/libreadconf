@@ -1,0 +1,68 @@
+.TH CONFIG_READ 3  "28 August 2020" "" "libreadconf Manual"
+.SH NAME
+config_read \- configuration read function
+.SH SYNOPSIS
+.nf
+.B #include <libreadconf.h>
+.PP
+.BI "int config_read(CONFIG *" cfg ");
+.ll -8
+.br
+.SH DESCRIPTION
+.PP
+The
+.BR config_read()
+function reads and parses the configuration file pointed to by
+.I cfg.
+.\"
+.SH RETURN VALUE
+.PP
+Upon successful completion
+.BR config_read(),
+returns 0.
+.PP
+On error,
+.BR config_read()
+returns -1, and (hopefully) sets
+.I errno
+to a value indicating the error.
+.SH ERRORS
+.PP
+The 
+.BR config_read(), 
+function may fail and set 
+.I errno 
+for any of the errors specified for the routines 
+.BR read(2),
+.BR malloc(3),
+.BR pthread_sigmask(3).
+.PP
+In the event that
+.I cfg
+is not a valid, open, configuration
+.BR config_read()
+may also set
+.I errno
+to
+.I EINVAL.
+.SH NOTES
+.SS config_read() notes.
+The results of attempting to read the same configuration multiple times is undefined.
+.\"
+.SS libreadconf notes.
+See 
+.BR libreadconf(3)
+for more information. 
+.SH SEE ALSO
+.BR config_open(3),
+.BR config_close(3),
+.BR config_rewind(3),
+.BR config_index(3),
+.BR config_search(3),
+.BR config_next(3),
+.BR config_index_br(3),
+.BR config_search_br(3),
+.BR config_next_br(3),
+.BR libreadconf(3).
+.SH COPYRIGHT
+Copyright \(co 2020 Ian "Luna" Ericson and the Finity Software Group.
