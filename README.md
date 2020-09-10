@@ -40,31 +40,31 @@ The following is only an overview. The manpages provided with the library give m
 
 All functions, constants, and datatypes are provided by the <libreadconf.h> header.
 
-* **CONFIG \*config_open(const char \*path)**
+* **CONFIG \*config_open(const char \*path)**  
 This function opens a file and returns a CONFIG associated with it.
 
-* **CONFIG \*config_fdopen(int fd)**
+* **CONFIG \*config_fdopen(int fd)**  
 The same as config_open(), but takes a file descriptor, rather than a pathname.
 
-* **CONFIG \*config_reopen(const char \* path, CONFIG \*cfg)**
+* **CONFIG \*config_reopen(const char \* path, CONFIG \*cfg)**  
 Re-opens the provided CONFIG and associates it with a new file.
 
-* **int config_read(CONFIG \*cfg)**
+* **int config_read(CONFIG \*cfg)**  
 Read all the data from an open CONFIG, stores it in a keylist, and prepares it to be searched.
 
-* **int config_close(CONFIG \*cfg)**
+* **int config_close(CONFIG \*cfg)**  
 Closes an open CONFIG and frees any memory associated with it.
 
-* **void config_rewind(CONFIG \*cfg)**
+* **void config_rewind(CONFIG \*cfg)**  
 Rewind the keylist associated with a CONFIG.
 
-* **config_index(CONFIG \*cfg, char \*name, char \*data_buff, unsigned int buff_size, unsigned int index)**
+* **config_index(CONFIG \*cfg, char \*name, char \*data_buff, unsigned int buff_size, unsigned int index)**  
 Look through the keylist of a CONFIG as you would an array, without changing the keylist position.
 
-* **config_search(CONFIG \*cfg, const char \*name, char \*data_buff, unsigned int buff_size)**
+* **config_search(CONFIG \*cfg, const char \*name, char \*data_buff, unsigned int buff_size)**  
 Search for the next occurrence of an item in the keylist of a CONFIG.
 
-* **config_next(CONFIG \*cfg, char \*name, char \*data_buff, unsigned int buff_size)**
+* **config_next(CONFIG \*cfg, char \*name, char \*data_buff, unsigned int buff_size)**  
 Get the next item from the keylist of a CONFIG.
 
 The config_index(), config_search(), and config_next functions all have by-reference counterparts that allow a programmer to access the memory that libreadconf allocates directly, rather than worrying about memcpy()s and buffer lengths. However there are caveats to doing this (see the libreadconf(3) manpage).
