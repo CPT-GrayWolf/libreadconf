@@ -15,7 +15,7 @@ The library may be built using 'make', in the same way as many other programs:
 > If you want to add custom compiler flags, but compile with pthread options enabled, be sure to include the "-pthread" option in your flags, or the library will not compile.
 >
 > By default libreadconf has a minimum buffer size. 
-> If he blocksize for a file is below this size, the blocksize will be ignored, and the minimub buffer size is used. This may be beneficial in some case, but may waste resources in others.
+> If the block size for a file is below this size, the block size will be ignored, and the minimum buffer size is used. This may be beneficial in some case, but may waste resources in others.
 > To disable minimum buffer size, include the "-D NO_MIN_BUFF" option in CFLAGS.
 
 If all goes well, you should see a nice clean compilation, free of any errors or warnings.
