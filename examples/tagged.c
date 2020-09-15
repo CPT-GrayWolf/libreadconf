@@ -56,7 +56,7 @@ int main(void)
 	// If all is well, we'll be able to look through
 	// the data that we read in.
 	if(config_read(cfg) == -1)
-		return 1
+		return 1;
 
     // Here we demonstrate the use of the config_next(),
     // config_search(), and config_rewind() functions

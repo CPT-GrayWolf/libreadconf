@@ -24,9 +24,12 @@
 #include <fcntl.h>
 #include "libreadconf.h"
 
+#define BUFF_MIN 512
 #define SIGMASK_SET 0
 #define SIGMASK_RST 1
 
+// sigprocmask() isn't thread safe, but we'll still allow
+// people to use it over pthread_sigmask() if they want.
 #ifdef NO_PTHREAD
     #define SIGPROCMASK_(HOW, SET, OLDSET) sigprocmask(HOW, SET, OLDSET)
 #else
@@ -40,6 +43,14 @@ typedef struct k_list
 	struct k_list  *key_next;
 } k_list;
 
+// I'm using pointer to pointer for key_current so that we
+// can free items from the current position without working 
+// back down the list or doing extra assignements.
+//
+// You may thing the pointer assigments are a mess, but I
+// can read them just fine, and I know exactly what's going
+// on.
+// 			-Luna
 struct config
 {
 	int             fd;
@@ -51,6 +62,14 @@ struct config
 	k_list        **key_current;
 };
 
+/*
+ * I started by declaring my static function here at the top.
+ * I may move them to (a) header(s) later.	
+ * 			-Luna
+ */
+
+// We have a function to get a file's blocksize using fstat().
+// We use it to determine what buffer size to start with.
 static ssize_t get_block_size(int fd)
 {
 	struct stat tmp;
@@ -61,6 +80,9 @@ static ssize_t get_block_size(int fd)
 		return tmp.st_blksize;
 }
 
+// Because space isn't the only whitespace character, we have
+// a function to test if a character is whitespace rather than
+// making our if() statements even harder to read.
 static int is_whitespace(char ctest)
 {
 	if(ctest == ' ' || ctest == '\t' || ctest == '\r')
@@ -69,6 +91,11 @@ static int is_whitespace(char ctest)
 		return 0;
 }
 
+// I decided on this over using strcmp() becaue we only care
+// if the strings are identical or not.
+//
+// We don't need to waste time on comparing strings that don't
+// match.
 static int fast_cmp(const char *restrict str1, const char *restrict str2)
 {
 	for(int i = 0; str1[i] != '\0'; i++)
@@ -80,6 +107,9 @@ static int fast_cmp(const char *restrict str1, const char *restrict str2)
 	return 1;
 }
 
+// Here's our 'magic' signal blocking function.
+// Tt handles both setting and resetting the signal mask when-
+// ever we enter any of the public functions.
 static int set_sigmask(int state)
 {
 	static sigset_t old_mask;
@@ -96,13 +126,28 @@ static int set_sigmask(int state)
 			return 0;
 	}
 	else if(state == SIGMASK_RST)
-		SIGPROCMASK_(SIG_SETMASK, &old_mask, NULL);
-		// If we fail to reset the mask we're kind of SOL.
-		// Should we just crash the program?
+	{
+		if(SIGPROCMASK_(SIG_SETMASK, &old_mask, NULL) != 0)
+		{
+			// If we fail to reset the mask we're kind of SOL.
+			// We'll just crash and *try* to print an error to
+			// stderr
+			write(STDERR_FILENO, "libreadconf: Failed to reset sigmask!\n", 39);
+			abort();
+			 // It shouldn't be possible to ever get here, but for safety.
+			_exit(1);
+		}
+	}
 
 	return 1;
 }
 
+/*
+ * Here we start our static functions for allocating
+ * handing, and freeing our linked-list.
+ */
+
+// Adds a new entry at the end of a linked-list.
 static int list_add(k_list **restrict list)
 {
 	if(*list == NULL)
@@ -138,6 +183,10 @@ static int list_add(k_list **restrict list)
 	return count;
 }
 
+// This is the pimitive used to implement the index
+// functions.
+// It returns the n-1th element from the element passed
+// to it.
 static k_list *list_get(int index, k_list *restrict list)
 {
 	if(list == NULL)
@@ -162,6 +211,10 @@ static k_list *list_get(int index, k_list *restrict list)
 	return current;
 }
 
+// Note that our function for freeing a list takes a 
+// pointer to pointer.
+// This lets us start in the middle of a list and set our
+// starting point to NULL in one step.
 static void list_free(k_list **restrict list)
 {
 	if(*list == NULL)
@@ -187,6 +240,13 @@ static void list_free(k_list **restrict list)
 	return;
 }
 
+/*
+ * Here we start our static functions for parsing our keys.
+ */
+
+// This function gets the next item in 'buff' starting at 
+// '*position' and puts it into the 'name' value of a list item.
+// At this point, the item is a single string.
 static int get_next_key(k_list *restrict key_out, char *restrict buff, size_t *position)
 {
 	if(key_out == NULL || buff == NULL || position == NULL)
@@ -258,6 +318,12 @@ static int get_next_key(k_list *restrict key_out, char *restrict buff, size_t *p
 		return -2;
 }
 
+// This function take the list item with a single string returned by 
+// get_next_key(), and parses it into two strings.
+//
+// Note that while we get two strings, we're still only using a 
+// single buffer.
+// This saves us doing extra allocations or copies.
 static int key_parse(k_list *restrict key)
 {
 	if(key == NULL || key->name == NULL)
@@ -320,7 +386,12 @@ static int key_parse(k_list *restrict key)
 		*(key->value + (end - start)) = '\0';
 
 	char *tmp;
-
+	
+	// Note how we reallocate the 'name' element of the list item
+	// This should save space, but may just result in extra work
+	// in some cases.
+	//
+	// Should we include a directive to skip this step?
 	if(!strlen(key->value) && is_key)
 	{
 		tmp = realloc(key->name, (strlen(key->name) + 3));
@@ -354,6 +425,13 @@ static int key_parse(k_list *restrict key)
 	return 0;
 }
 
+/*
+ * Here we get into the public functions of the library.
+ * This should be the only part most people interact with.
+ *
+ * If you want descriptions of them, check the manpages.
+ */
+ 
 CONFIG *config_open(const char *restrict path)
 {
 	if(!set_sigmask(SIGMASK_SET))
@@ -390,6 +468,9 @@ CONFIG *config_open(const char *restrict path)
 		return NULL;
 }
 
+// This one's not quite done, but it's here.
+// We're missing some checking to ensure the we can actually
+// use the descriptor we were passed.
 CONFIG *config_fdopen(int fd)
 {
 	if(!set_sigmask(SIGMASK_SET))
@@ -475,12 +556,24 @@ int config_read(CONFIG *restrict cfg)
 		return -1;
 	}
 	
-	if(cfg->block_size < 512)
+	// We'll allow people to choose whether they want to 
+	// use a minimum buffer size.
+	//
+	// Depending on the envinronment, this may or may not
+	// be useful.
+	#ifdef NO_MIN_BUFF
+	cfg->buff_size = cfg_block_size;
+	#else
+	if(cfg->block_size < BUFF_MIN)
 		cfg->buff_size = cfg->block_size;
 	else
-		cfg->buff_size = 512;
-		
-	// debuging
+		cfg->buff_size = BUFF_MIN;
+	#endif		
+
+	// I was using this line to debug issues with parsing
+	// between buffers.
+	// I'll leave it here for now.
+	// 			-Luna
 	//cfg->buff_size = 32;
 
 	cfg->buff = malloc(cfg->buff_size + 1);
@@ -535,7 +628,9 @@ int config_read(CONFIG *restrict cfg)
 			if(state == -1)
 				goto fail;
 
-			// We break here if it's time to exit to avoid adding an extra list entry
+			// We break here if it's time to exit 
+			// to avoid adding an extra list entry
+			// (though that can still happen...)
 			// or closing everything in an if().
 			//
 			// Just feels a bit cleaner, for now.
@@ -550,6 +645,16 @@ int config_read(CONFIG *restrict cfg)
 		}
 	}
 	
+	// Due to a quirk of get_next_key(), we may have 
+	// accidentally allocated an empty key at the end of our
+	// list.
+	//
+	// I'f that's the case, we need to free it, or it may
+	// cause problems.
+	//
+	// There's probably a better solution to this, but this
+	// is fine for now.	
+	// 			-Luna
 	if((*cfg->key_current)->name == NULL)
 		list_free(cfg->key_current);
 
@@ -610,21 +715,25 @@ int config_close(CONFIG *restrict cfg)
 	}
 	
 	// Should this be "free and close", or "close and free"?
-	// Either way, if close() fails, we're left in an undefined state.
+	// Either way, if close() fails, we're left in an 
+	// undefined state.
 	// 			-Luna
-	list_free(&(cfg->key_list));
-	free(cfg->buff);
 	if(close(cfg->fd) != 0)
 	{
 		set_sigmask(SIGMASK_RST);
 		return -1;
 	}
+	list_free(&(cfg->key_list));
+	free(cfg->buff);
 	free(cfg);
 
 	set_sigmask(SIGMASK_RST);
 	return 0;
 }
 
+// If you're asking why these functions return -1 and 0, I don't
+// know. It was an arbitrary choise that I should probably change.
+// 			-Luna
 int config_index(CONFIG *restrict cfg, char *restrict name, char *restrict data_buff, unsigned int buff_size, unsigned int index)
 {
 	if(!set_sigmask(SIGMASK_SET))
@@ -779,6 +888,9 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 	return 1;
 }
 
+// The by-reference function were originaly a debug tool, but
+// ended up being useful, so I left them in as a feature.
+// 			-Luna
 void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict data, unsigned int index)
 {
 	if(!set_sigmask(SIGMASK_SET))
