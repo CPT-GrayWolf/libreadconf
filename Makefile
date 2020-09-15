@@ -15,7 +15,7 @@ all: $(SRCDIR)/libreadconf.c
 	$(CC) -shared $(CFLAGS) $(TARGET).o -o $(TARGET).so
 
 install:
-	@install -m 644 $(TARGET).so $(TARGETDIR)/$(TARGET).so$(SUFFIX)
+	@install -m 755 $(TARGET).so $(TARGETDIR)/$(TARGET).so$(SUFFIX)
 	@echo "Installed $(TARGET) in $(TARGETDIR)"
 	@install -m 644 $(SRCDIR)/libreadconf.h $(INCLUDEDIR)/
 	@echo "Installed headers for $(TARGET) in $(INCLUDEDIR)"
