@@ -24,9 +24,12 @@
 #include <fcntl.h>
 #include "libreadconf.h"
 
-#define BUFF_MIN 512
 #define SIGMASK_SET 0
 #define SIGMASK_RST 1
+
+#ifndef NO_MIN_BUFF
+	#define BUFF_MIN 512
+#endif
 
 // sigprocmask() isn't thread safe, but we'll still allow
 // people to use it over pthread_sigmask() if they want.
@@ -147,7 +150,7 @@ static int set_sigmask(int state)
  * handing, and freeing our linked-list.
  */
 
-// Adds a new entry at the end of a linked-list.
+// Adds a new entry *at the end* of a linked-list.
 static int list_add(k_list **restrict list)
 {
 	if(*list == NULL)
@@ -287,8 +290,8 @@ static int get_next_key(k_list *restrict key_out, char *restrict buff, size_t *p
 		if(key_out->name == NULL)
 			return -1;
 
-		memcpy(key_out->name, &buff[start], (end - start));
-		*(key_out->name + (end - start)) = '\0';
+		memcpy(key_out->name, (buff + start), (end - start));
+		key_out->name[end - start] = '\0';
 		
 		if(buff[*position] == '\n')
 			return 0;
@@ -306,8 +309,8 @@ static int get_next_key(k_list *restrict key_out, char *restrict buff, size_t *p
 
 		key_out->name = tmp;
 
-		memcpy((key_out->name + old_len), &buff[start], (end - start));
-		*(key_out->name + (old_len + (end - start))) = '\0';
+		memcpy((key_out->name + old_len), (buff + start), (end - start));
+		key_out->name[old_len + (end - start)] = '\0';
 
 		if(buff[*position] == '\n')
 			return 0;
@@ -337,53 +340,53 @@ static int key_parse(k_list *restrict key)
 	       
 	ssize_t	start = -1, end;
 
-	for(position = 0; *(key->name + position) != '=' && *(key->name + position) != '\0'; position++)
+	for(position = 0; key->name[position] != '=' && key->name[position] != '\0'; position++)
 	{
-		if(!is_whitespace(*(key->name + position)) && start == -1)
+		if(!is_whitespace(key->name[position]) && start == -1)
 		{
 			start = position;
 			end = position + 1;
 		}
-		else if(!is_whitespace(*(key->name + position)))
+		else if(!is_whitespace(key->name[position]))
 			end = position + 1;
 	}
 	
-	if(*(key->name + position) == '=')
+	if(key->name[position] == '=')
 	{
 		is_key = 1;
-		*(key->name + position) = ' ';
+		key->name[position] = ' ';
 	}
 
 	if(start > 0)
 	{
 		memmove(key->name, (key->name + start), (end - start));
-		*(key->name + (end - start)) = '\0';
+		key->name[end - start] = '\0';
 	}
 	else
-		*(key->name + (end - start)) = '\0';
+		key->name[end - start] = '\0';
 
 	key->value = (key->name + (end - start + 1));
 
 	start = -1;
 
-	for(position = 0; *(key->value + position) != '\0'; position++)
+	for(position = 0; key->value[position] != '\0'; position++)
 	{
-		if(!is_whitespace(*(key->value + position)) && start == -1)
+		if(!is_whitespace(key->value[position]) && start == -1)
 		{
 			start = position;
 			end = position + 1;
 		}
-		else if(!is_whitespace(*(key->value + position)))
+		else if(!is_whitespace(key->value[position]))
 			end = position + 1;
 	}
 
 	if(start > 0)
 	{
 		memmove(key->value, (key->value + start), (end - start));
-		*(key->value + (end - start)) = '\0';
+		key->value[end - start] = '\0';
 	}
 	else
-		*(key->value + (end - start)) = '\0';
+		key->value[end - start] = '\0';
 
 	char *tmp;
 	
@@ -400,8 +403,8 @@ static int key_parse(k_list *restrict key)
 		else
 			return -1;
 
-		*(key->value) = '\n';
-		*(key->value + 1) = '\0';
+		key->value[0] = '\n';
+		key->value[1] = '\0';
 	}
 	if(!strlen(key->value) && !is_key)
 	{
@@ -411,7 +414,7 @@ static int key_parse(k_list *restrict key)
 		else
 			return -1;
 
-		*(key->value) = '\0';
+		key->value[0] = '\0';
 	}
 	else
 	{
@@ -512,7 +515,7 @@ CONFIG *config_reopen(const char *restrict path, CONFIG *cfg)
 		set_sigmask(SIGMASK_RST);
 		return NULL;
 	}
-	list_free(&(cfg->key_list));
+	list_free(&cfg->key_list);
 	free(cfg->buff);
 	free(cfg);
 
@@ -583,7 +586,7 @@ int config_read(CONFIG *restrict cfg)
 		return -1;
 	}
 	cfg->buff_pos = 0;
-	*(cfg->buff + cfg->buff_size) = '\0';
+	cfg->buff[cfg->buff_size] = '\0';
 
 	int reading = 1;
 	ssize_t state;
@@ -605,26 +608,26 @@ int config_read(CONFIG *restrict cfg)
 		
 		for(int i=0;i < state;i++)
 		{
-			if(*(cfg->buff + i) == '\0')
-				*(cfg->buff +i) = ' ';
+			if(cfg->buff[i] == '\0')
+				cfg->buff[i] = ' ';
 		}
 
-		*(cfg->buff + state) = '\0';
+		cfg->buff[state] = '\0';
 
 		
 		if(cfg->key_list == NULL)
 		{
-			state = list_add(&(cfg->key_list));
+			state = list_add(&cfg->key_list);
 			if(cfg->key_list == NULL)
 				goto fail;	
-			cfg->key_current = &(cfg->key_list);
+			cfg->key_current = &cfg->key_list;
 		}
 		
 		state = 0;
 
 		while(reading)
 		{
-			state = get_next_key(*(cfg->key_current), cfg->buff, &(cfg->buff_pos));
+			state = get_next_key(*cfg->key_current, cfg->buff, &cfg->buff_pos);
 			if(state == -1)
 				goto fail;
 
@@ -641,7 +644,7 @@ int config_read(CONFIG *restrict cfg)
 			if(list_add(cfg->key_current) == -1)
 				goto fail;
 
-			cfg->key_current = &((*cfg->key_current)->key_next);
+			cfg->key_current = &(*cfg->key_current)->key_next;
 		}
 	}
 	
@@ -658,25 +661,25 @@ int config_read(CONFIG *restrict cfg)
 	if((*cfg->key_current)->name == NULL)
 		list_free(cfg->key_current);
 
-	cfg->key_current = &(cfg->key_list);
+	cfg->key_current = &cfg->key_list;
 
-	while(*(cfg->key_current) != NULL)
+	while(*cfg->key_current != NULL)
 	{
-		state = key_parse(*(cfg->key_current));
+		state = key_parse(*cfg->key_current);
 		if(state == -1)
 			goto fail;
 		
-		cfg->key_current = &((*cfg->key_current)->key_next);
+		cfg->key_current = &(*cfg->key_current)->key_next;
 	}
 
-	cfg->key_current = &(cfg->key_list);
+	cfg->key_current = &cfg->key_list;
 
 	set_sigmask(SIGMASK_RST);
 	return 0;
 
 	fail:
 		set_sigmask(SIGMASK_RST);
-		list_free(&(cfg->key_list));
+		list_free(&cfg->key_list);
 		free(cfg->buff);
 		return -1;
 
@@ -695,7 +698,7 @@ void config_rewind(CONFIG *restrict cfg)
 		return;
 	}
 
-	cfg->key_current = &(cfg->key_list);
+	cfg->key_current = &cfg->key_list;
 
 	set_sigmask(SIGMASK_RST);
 	return;
@@ -723,7 +726,7 @@ int config_close(CONFIG *restrict cfg)
 		set_sigmask(SIGMASK_RST);
 		return -1;
 	}
-	list_free(&(cfg->key_list));
+	list_free(&cfg->key_list);
 	free(cfg->buff);
 	free(cfg);
 
@@ -741,8 +744,8 @@ int config_index(CONFIG *restrict cfg, char *restrict name, char *restrict data_
 
 	if(cfg == NULL || cfg->key_list == NULL)
 	{
-		*name = '\0';
-		*data_buff = '\0';
+		name[0] = '\0';
+		data_buff[0] = '\0';
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
@@ -754,8 +757,8 @@ int config_index(CONFIG *restrict cfg, char *restrict name, char *restrict data_
 	tmp = list_get(index, cfg->key_list);
 	if(tmp == NULL)
 	{
-		*name = '\0';
-		*data_buff = '\0';
+		name[0] = '\0';
+		data_buff[0] = '\0';
 
 		set_sigmask(SIGMASK_RST);
 		return 0;
@@ -802,10 +805,10 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 
 	while(1)
 	{
-		if(*(cfg->key_current) == NULL || fast_cmp((*cfg->key_current)->name, name))
+		if(*cfg->key_current == NULL || fast_cmp((*cfg->key_current)->name, name))
 			break;
 
-		cfg->key_current = &((*cfg->key_current)->key_next);
+		cfg->key_current = &(*cfg->key_current)->key_next;
 	}
 
 	if(*(cfg->key_current) == NULL)
@@ -821,7 +824,7 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 		{
 			memcpy(data_buff, (*cfg->key_current)->value, (buff_size));
 			data_buff[buff_size - 1] = '\0';
-			cfg->key_current = &((*cfg->key_current)->key_next);
+			cfg->key_current = &(*cfg->key_current)->key_next;
 
 			set_sigmask(SIGMASK_RST);
 			return(strlen((*cfg->key_current)->value) - buff_size);
@@ -829,7 +832,7 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 		else
 			memcpy(data_buff, (*cfg->key_current)->value, (strlen((*cfg->key_current)->value) + 1));
 
-		cfg->key_current = &((*cfg->key_current)->key_next);
+		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
 		return 1;
@@ -851,7 +854,7 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 		return -1;
 	}
 
-	if(*(cfg->key_current) == NULL)
+	if(*cfg->key_current == NULL)
 	{
 		name[0] = '\0';
 		data_buff[0] = '\0';
@@ -873,7 +876,7 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 		{
 			memcpy(data_buff, (*cfg->key_current)->value, (buff_size));
 			data_buff[buff_size - 1] = '\0';
-			cfg->key_current = &((*cfg->key_current)->key_next);
+			cfg->key_current = &(*cfg->key_current)->key_next;
 
 			set_sigmask(SIGMASK_RST);
 			return(strlen((*cfg->key_current)->value) - buff_size);
@@ -882,7 +885,7 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 			memcpy(data_buff, (*cfg->key_current)->value, (strlen((*cfg->key_current)->value) + 1));
 	}
 
-	cfg->key_current = &((*cfg->key_current)->key_next);
+	cfg->key_current = &(*cfg->key_current)->key_next;
 
 	set_sigmask(SIGMASK_RST);
 	return 1;
@@ -932,7 +935,7 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 	if(!set_sigmask(SIGMASK_SET))
 		return;
 
-	if(cfg == NULL || cfg->key_current == NULL || *(cfg->key_current) == NULL || name == NULL)
+	if(cfg == NULL || cfg->key_current == NULL || *cfg->key_current == NULL || name == NULL)
 	{
 		*data = NULL;
 
@@ -943,13 +946,13 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 	
 	while(1)
 	{
-		if(*(cfg->key_current) == NULL || fast_cmp((*cfg->key_current)->name, name))
+		if(*cfg->key_current == NULL || fast_cmp((*cfg->key_current)->name, name))
 			break;
 
-		cfg->key_current = &((*cfg->key_current)->key_next);
+		cfg->key_current = &(*cfg->key_current)->key_next;
 	}
 
-	if(*(cfg->key_current) == NULL)
+	if(*cfg->key_current == NULL)
 	{
 		*data = NULL;
 
@@ -959,7 +962,7 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 	else
 	{
 		*data = (*cfg->key_current)->value;
-		cfg->key_current = &((*cfg->key_current)->key_next);
+		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
 		return;
@@ -981,7 +984,7 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 		return;
 	}
 
-	if(*(cfg->key_current) == NULL)
+	if(*cfg->key_current == NULL)
 	{
 		*name = NULL;
 		*data = NULL;
