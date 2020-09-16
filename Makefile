@@ -14,6 +14,10 @@ all: $(SRCDIR)/libreadconf.c
 	$(CC) -c -fpic $(CFLAGS) $(SRCDIR)/libreadconf.c -o $(TARGET).o
 	$(CC) -shared $(CFLAGS) $(TARGET).o -o $(TARGET).so
 
+debug:
+	$(CC) -g -c -fpic $(CFLAGS) $(SRCDIR)/libreadconf.c -o $(TARGET).o
+	$(CC) -g -shared $(CFLAGS) $(TARGET).o -o $(TARGET).so
+
 install:
 	@install -m 755 $(TARGET).so $(TARGETDIR)/$(TARGET).so$(SUFFIX)
 	@echo "Installed $(TARGET) in $(TARGETDIR)"
