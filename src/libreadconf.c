@@ -742,6 +742,13 @@ int config_index(CONFIG *restrict cfg, char *restrict name, char *restrict data_
 	if(!set_sigmask(SIGMASK_SET))
 		return -1;
 
+	if(name == NULL || data_buff == NULL)
+	{
+		errno = EINVAL;
+		set_sigmask(SIGMASK_RST);
+		return -1;
+	}
+
 	if(cfg == NULL || cfg->key_list == NULL)
 	{
 		name[0] = '\0';
@@ -796,7 +803,8 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 
 	if(cfg == NULL || cfg->key_current == NULL || name == NULL)
 	{
-		data_buff[0] = '\0';
+		if(data_buff != NULL)
+			data_buff[0] = '\0';
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
@@ -813,14 +821,15 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 
 	if(*(cfg->key_current) == NULL)
 	{
-		data_buff[0] = '\0';
+		if(data_buff != NULL)
+			data_buff[0] = '\0';
 
 		set_sigmask(SIGMASK_RST);
 		return 0;
 	}
 	else
 	{
-		if(strlen((*cfg->key_current)->value) > (buff_size - 1))
+		if(data_buff != NULL && strlen((*cfg->key_current)->value) > (buff_size - 1))
 		{
 			memcpy(data_buff, (*cfg->key_current)->value, (buff_size));
 			data_buff[buff_size - 1] = '\0';
@@ -829,7 +838,7 @@ int config_search(CONFIG *restrict cfg, const char *restrict name, char *restric
 			set_sigmask(SIGMASK_RST);
 			return(strlen((*cfg->key_current)->value) - buff_size);
 		}
-		else
+		else if(data_buff != NULL)
 			memcpy(data_buff, (*cfg->key_current)->value, (strlen((*cfg->key_current)->value) + 1));
 
 		cfg->key_current = &(*cfg->key_current)->key_next;
@@ -843,6 +852,13 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 {
 	if(!set_sigmask(SIGMASK_SET))
 		return -1;
+
+	if(name == NULL || data_buff == NULL)
+	{
+		errno = EINVAL;
+		set_sigmask(SIGMASK_RST);
+		return -1;
+	}
 
 	if(cfg == NULL || cfg->key_current == NULL)
 	{
@@ -899,6 +915,13 @@ void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict
 	if(!set_sigmask(SIGMASK_SET))
 		return;
 
+	if(name == NULL || data == NULL)
+	{
+		errno = EINVAL;
+		set_sigmask(SIGMASK_RST);
+		return;
+	}
+
 	if(cfg == NULL || cfg->key_list == NULL)
 	{
 		*name = NULL;
@@ -937,7 +960,8 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 
 	if(cfg == NULL || cfg->key_current == NULL || *cfg->key_current == NULL || name == NULL)
 	{
-		*data = NULL;
+		if(data != NULL)
+			*data = NULL;
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
@@ -954,14 +978,16 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 
 	if(*cfg->key_current == NULL)
 	{
-		*data = NULL;
+		if(data != NULL)
+			*data = NULL;
 
 		set_sigmask(SIGMASK_RST);
 		return;
 	}
 	else
 	{
-		*data = (*cfg->key_current)->value;
+		if(data != NULL)
+			*data = (*cfg->key_current)->value;
 		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
@@ -973,6 +999,13 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 {
 	if(!set_sigmask(SIGMASK_SET))
 		return;
+
+	if(name == NULL || data == NULL)
+	{
+		errno = EINVAL;
+		set_sigmask(SIGMASK_RST);
+		return;
+	}
 
 	if(cfg == NULL || cfg->key_list == NULL)
 	{

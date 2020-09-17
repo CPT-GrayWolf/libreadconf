@@ -58,35 +58,39 @@ int main(void)
 	if(config_read(cfg) == -1)
 		return 1;
 
-    // Here we demonstrate the use of the config_next(),
-    // config_search(), and config_rewind() functions
-    //
-    // Note how the searches after searching for a tag
-    // return the next occurrence of an item, starting at
-    // the tag, even if there's more than one occurrence
-    // of that key.
-    //
-    // Also note that the rewind allows us to search a 
-    // "Global" item, even after reaching the end of the
-    // list.
+    	// Here we demonstrate the use of the config_next(),
+    	// config_search(), and config_rewind() functions
+    	//
+    	// Note how the searches after searching for a tag
+    	// return the next occurrence of an item, starting at
+    	// the tag, even if there's more than one occurrence
+    	// of that key.
+   	//
+    	// Also note that the rewind allows us to search a 
+    	// "Global" item, even after reaching the end of the
+    	// list.
 	config_next(cfg, name, data, 64);
 	if(name[0] != '\0')	
 		printf("Read \"%s\" with value \"%s\"\n", name, data);
 	else
 		return 0;
 
-    // Note that, as the 'name' argument to config_search()
-    // is a constant, we cannot use it to test for success.
-    // Instead we use the return value of the function.
-    //
-    // GOTCHA:
-    // The search functions in libreadconf use a "dumb"
-    // search.
+    	// Note that, as the 'name' argument to config_search()
+    	// is a constant, we cannot use it to test for success.
+    	// Instead we use the return value of the function.
+    	//
+	// We may now call config_search() with NULL as the 
+	// data buffer. This will case the function to seek 
+	// without making any copies.
+	//
+    	// GOTCHA:
+    	// The search functions in libreadconf use a "dumb"
+    	// search.
 	// They only check for EXACTLY what you tell them to.
 	// Example:
 	// Try changing "[Section1]" to "[section1]", and watch
 	// it fail.
-	if(config_search(cfg, "[Section1]", data, 64))
+	if(config_search(cfg, "[Section1]", NULL, 0))
 		printf("\nJumping to Section1\n");
 	else
 		return 0;
@@ -101,7 +105,7 @@ int main(void)
 	else
 		return 0;
 	
-	if(config_search(cfg, "[Section2]", data, 64))
+	if(config_search(cfg, "[Section2]", NULL, 0))
 		printf("\nJumping to Section2\n");
 	else
 		return 0;
