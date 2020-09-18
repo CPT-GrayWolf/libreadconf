@@ -510,14 +510,17 @@ CONFIG *config_reopen(const char *restrict path, CONFIG *cfg)
 	if(!set_sigmask(SIGMASK_SET))
 		return NULL;
 
-	if(close(cfg->fd) != 0)
+	if(cfg != NULL)
 	{
-		set_sigmask(SIGMASK_RST);
-		return NULL;
+		if(close(cfg->fd) != 0)
+		{
+			set_sigmask(SIGMASK_RST);
+			return NULL;
+		}
+		list_free(&cfg->key_list);
+		free(cfg->buff);
+		free(cfg);
 	}
-	list_free(&cfg->key_list);
-	free(cfg->buff);
-	free(cfg);
 
 	CONFIG *init = malloc(sizeof(CONFIG));
 	if(init == NULL)
