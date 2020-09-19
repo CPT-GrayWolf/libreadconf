@@ -1,27 +1,27 @@
 /*
-// This example code is distributed as a part of the
-// libreadconf library, and is provided as public domain,
-// free of any license restrictions, for the convenience 
-// of any developers looking to use the library.
-//
-// As such you are free to copy, redistribute, and reuse
-// this code, or any part thereof, in any way, with or 
-// without credit as to it's origin.
-//
-// YOU MAY NOT make claim that you are the originator of
-// this code (unless you really are), or attempt take 
-// legal action against others for using it, or any part 
-// of it!
-//
-// This code is distributed in the hope that it will be
-// useful, but WITHOUT ANY WARRANTY, implied or otherwise.
-// It is provided without guarantee of fitness for ANY
-// purpose.
-// In fact the creator implores you to NOT reuse it in ANY
-// production program, and instead write your own, more
-// appropriate, code.
-//                                        --Luna
-*/
+ * This example code is distributed as a part of the
+ * libreadconf library, and is provided as public domain,
+ * free of any license restrictions, for the convenience 
+ * of any developers looking to use the library.
+ *
+ * As such you are free to copy, redistribute, and reuse
+ * this code, or any part thereof, in any way, with or 
+ * without credit as to it's origin.
+ *
+ * YOU MAY NOT make claim that you are the originator of
+ * this code (unless you really are), or attempt take 
+ * legal action against others for using it, or any part 
+ * of it!
+ *
+ * This code is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY, implied or otherwise.
+ * It is provided without guarantee of fitness for ANY
+ * purpose.
+ * In fact the creator implores you to NOT reuse it in ANY
+ * production program, and instead write your own, more
+ * appropriate, code.
+ *                                        --Luna
+ */
 #include <stdio.h>
 #include <libreadconf.h>
 
