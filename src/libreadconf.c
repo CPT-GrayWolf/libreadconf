@@ -1032,6 +1032,7 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 	{
 		*name = (*cfg->key_current)->name;
 		*data = (*cfg->key_current)->value;
+		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
 		return;
