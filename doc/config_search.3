@@ -7,7 +7,7 @@ config_search, config_search_br \- search a configuration's keylist for a known 
 .PP
 .BI "int config_search(CONFIG *" cfg ", const char *" name ", char *" data_buff ", unsigned int " buff_size ");
 .PP 
-.BI "void config_search_br(CONFIG *" cfg ", const char *" name ", char **" data ");
+.BI "int config_search_br(CONFIG *" cfg ", const char *" name ", char **" data ");
 .ll -8
 .br
 .SH DESCRIPTION
@@ -71,6 +71,8 @@ to a value indicating the error.
 .\"
 .SS config_search_br()
 On sucsessful completion,
+.BR config_search_br()
+returns 1, and
 .I data
 is set to point to the value of key
 .I name.
@@ -85,11 +87,15 @@ If key
 .I name
 does not exist,
 .I data
-will be NULL.
+will be NULL, and
+.BR config_search_br()
+returns 0.
 .PP
 On error,
 .I data
-will be set to NULL and
+will be set to NULL,
+.BR config_search_br
+returns -1, and
 .I errno
 will (hopefully) be set to a value indicating the error.
 .\"

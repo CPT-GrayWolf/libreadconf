@@ -7,7 +7,7 @@ config_index, config_index_br \- get a configuration key by array index
 .PP
 .BI "int config_index(CONFIG *" cfg ", char *" name ", char *" data_buff ", unsigned int " buff_size ", unsigned in " index ");
 .PP 
-.BI "void config_index_br(CONFIG *" cfg ", char **" name ", char **" data ", unsigned int " index ");
+.BI "int config_index_br(CONFIG *" cfg ", char **" name ", char **" data ", unsigned int " index ");
 .ll -8
 .br
 .SH DESCRIPTION
@@ -80,6 +80,8 @@ to a value indicating the error.
 .\"
 .SS config_index_br()
 On sucsessful completion,
+.BR config_index_br()
+returns 1, and
 .I name
 and
 .I data
@@ -97,6 +99,8 @@ will contain a newline.
 If
 .I index
 is greater than the number of items in the keylist,
+.BR config_index_br()
+returns 0, and
 .I name
 and
 .I data
@@ -106,7 +110,9 @@ On error,
 .I name
 and
 .I data
-will be set to NULL and
+will be set to NULL,
+.BR config_index_br
+returns -1, and
 .I errno
 will (hopefully) be set to a value indicating the error.
 .\"

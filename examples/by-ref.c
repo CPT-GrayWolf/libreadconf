@@ -68,11 +68,10 @@ int main (void)
 	else
 		return 0;
 
-	//+To-do:
-	//+Add return values to the by-reference functions.
-	//+We have no way of checking if this suceeded or not.
-	config_search_br(cfg, "[Section1]", NULL);
-	printf("\nJumping to Section1\n");
+	if(config_search_br(cfg, "[Section1]", NULL) == 1)
+		printf("\nJumping to Section1\n");
+	else
+		return 0;
 
 	config_next_br(cfg, &name, &data);
 	if(name != NULL)

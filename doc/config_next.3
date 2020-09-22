@@ -7,7 +7,7 @@ config_next, config_next_br \- get the next key from a configuration's keylist
 .PP
 .BI "int config_next(CONFIG *" cfg ", char *" name ", char *" data_buff ", unsigned int " buff_size ");
 .PP 
-.BI "void config_next_br(CONFIG *" cfg ", char **" name ", char **" data ");
+.BI "int config_next_br(CONFIG *" cfg ", char **" name ", char **" data ");
 .ll -8
 .br
 .SH DESCRIPTION
@@ -70,6 +70,8 @@ to a value indicating the error.
 .\"
 .SS config_next_br()
 On sucsessful completion,
+.BR config_next_br()
+returns 1, and
 .I name
 and
 .I data
@@ -81,6 +83,8 @@ If an element exists but is not a valid key,
 will contain a newline.
 .PP
 If there are no further items in the keylist,
+.BR config_next_br()
+returns 0, and
 .I name
 and
 .I data
@@ -90,7 +94,9 @@ On error,
 .I name
 and
 .I data
-will be set to NULL and
+will be set to NULL,
+.BR config_next_br()
+returns -1, and
 .I errno
 will (hopefully) be set to a value indicating the error.
 .\"

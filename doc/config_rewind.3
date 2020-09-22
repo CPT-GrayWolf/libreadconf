@@ -5,7 +5,7 @@ config_rewind \- set a configuration file's keylist to its first element
 .nf
 .B #include <libreadconf.h>
 .PP
-.BI "void config_close(CONFIG *" cfg ");
+.BI "int config_close(CONFIG *" cfg ");
 .ll -8
 .br
 .SH DESCRIPTION
@@ -19,6 +19,10 @@ and sets it back to its fisrt element, allowing it to be re-read using
 .BR config_next(3),
 and their by-reference counterparts.
 .\"
+.SH RETURN VALUE
+Uppon success,
+.BR config_rewind()
+returns 1. On error, it returns 0.
 .SH ERRORS
 .PP
 The 

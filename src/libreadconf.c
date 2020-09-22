@@ -688,36 +688,36 @@ int config_read(CONFIG *restrict cfg)
 
 }
 
-void config_rewind(CONFIG *restrict cfg)
+int config_rewind(CONFIG *restrict cfg)
 {
 	if(!set_sigmask(SIGMASK_SET))
-		return;
+		return 0;
 
 	if(cfg == NULL || cfg->key_list == NULL)
 	{  
 		errno = EINVAL;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 0;
 	}
 
 	cfg->key_current = &cfg->key_list;
 
 	set_sigmask(SIGMASK_RST);
-	return;
+	return 1;
 }
 
 int config_close(CONFIG *restrict cfg)
 {
 	if(!set_sigmask(SIGMASK_SET))
-		return -1;
+		return 0;
 
 	if(cfg == NULL)
 	{
 		errno = EINVAL;
 
 		set_sigmask(SIGMASK_RST);
-		return -1;
+		return 0;
 	}
 	
 	// Should this be "free and close", or "close and free"?
@@ -727,18 +727,23 @@ int config_close(CONFIG *restrict cfg)
 	if(close(cfg->fd) != 0)
 	{
 		set_sigmask(SIGMASK_RST);
-		return -1;
+		return 0;
 	}
 	list_free(&cfg->key_list);
 	free(cfg->buff);
 	free(cfg);
 
 	set_sigmask(SIGMASK_RST);
-	return 0;
+	return 1;
 }
 
-// If you're asking why these functions return -1 and 0, I don't
-// know. It was an arbitrary choise that I should probably change.
+// I now remember why these functions return -1 on error. By 
+// returning -1 for error, 0 for the end of list, 1 for 
+// sucess, and greater than 1 to indicate a truncated data
+// buffer, we can quickly get some idea what's happening.
+//
+// Looking back over it more closely, that's actually pretty
+// obvious.
 // 			-Luna
 int config_index(CONFIG *restrict cfg, char *restrict name, char *restrict data_buff, unsigned int buff_size, unsigned int index)
 {
@@ -913,16 +918,16 @@ int config_next(CONFIG *restrict cfg, char *restrict name, char *restrict data_b
 // The by-reference function were originaly a debug tool, but
 // ended up being useful, so I left them in as a feature.
 // 			-Luna
-void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict data, unsigned int index)
+int config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict data, unsigned int index)
 {
 	if(!set_sigmask(SIGMASK_SET))
-		return;
+		return -1;
 
 	if(name == NULL || data == NULL)
 	{
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
-		return;
+		return -1;
 	}
 
 	if(cfg == NULL || cfg->key_list == NULL)
@@ -932,7 +937,7 @@ void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
-		return;
+		return -1;
 	}
 
 	k_list *tmp;
@@ -944,7 +949,7 @@ void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict
 		*data = NULL;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 0;
 	}
 	else
 	{
@@ -952,14 +957,14 @@ void config_index_br(CONFIG *restrict cfg, char **restrict name, char **restrict
 		*data = tmp->value;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 1;
 	}
 }
 
-void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **restrict data)
+int config_search_br(CONFIG *restrict cfg, const char *restrict name, char **restrict data)
 {
 	if(!set_sigmask(SIGMASK_SET))
-		return;
+		return -1;
 
 	if(cfg == NULL || cfg->key_current == NULL || *cfg->key_current == NULL || name == NULL)
 	{
@@ -968,7 +973,7 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
-		return;
+		return -1;
 	}
 	
 	while(1)
@@ -985,7 +990,7 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 			*data = NULL;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 0;
 	}
 	else
 	{
@@ -994,20 +999,20 @@ void config_search_br(CONFIG *restrict cfg, const char *restrict name, char **re
 		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 1;
 	}
 }
 
-void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict data)
+int config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict data)
 {
 	if(!set_sigmask(SIGMASK_SET))
-		return;
+		return -1;
 
 	if(name == NULL || data == NULL)
 	{
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
-		return;
+		return -1;
 	}
 
 	if(cfg == NULL || cfg->key_list == NULL)
@@ -1017,7 +1022,7 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 
 		errno = EINVAL;
 		set_sigmask(SIGMASK_RST);
-		return;
+		return -1;
 	}
 
 	if(*cfg->key_current == NULL)
@@ -1026,7 +1031,7 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 		*data = NULL;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 0;
 	}
 	else
 	{
@@ -1035,6 +1040,6 @@ void config_next_br(CONFIG *restrict cfg, char **restrict name, char **restrict 
 		cfg->key_current = &(*cfg->key_current)->key_next;
 
 		set_sigmask(SIGMASK_RST);
-		return;
+		return 1;
 	}
 }

@@ -30,15 +30,15 @@ extern CONFIG *config_fdopen(int fd);
 extern CONFIG *config_reopen(const char * path, CONFIG *cfg);
 extern int config_read(CONFIG *cfg);
 extern int config_close(CONFIG *cfg);
-extern void config_rewind(CONFIG *cfg);
+extern int config_rewind(CONFIG *cfg);
 
 extern int config_index(CONFIG *cfg, char *name, char *data_buff, unsigned int buff_size, unsigned int index);
 extern int config_search(CONFIG *cfg, const char *name, char *data_buff, unsigned int buff_size);
 extern int config_next(CONFIG *cfg, char *name, char *data_buff, unsigned int buff_size);
 
-extern void config_index_br(CONFIG *cfg, char **name, char **data, unsigned int index);
-extern void config_search_br(CONFIG *cfg, const char *name, char **data);
-extern void config_next_br(CONFIG *cfg, char **name, char **data);
+extern int config_index_br(CONFIG *cfg, char **name, char **data, unsigned int index);
+extern int config_search_br(CONFIG *cfg, const char *name, char **data);
+extern int config_next_br(CONFIG *cfg, char **name, char **data);
   
 #ifdef __cplusplus
 }
