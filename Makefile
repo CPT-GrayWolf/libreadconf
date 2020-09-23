@@ -29,11 +29,11 @@ endif
 	@install -m 644 $(WDIR)/src/libreadconf.h $(INCLUDEDIR)/$(TARGET).h
 	@echo Installed headers for $(TARGET) in $(INCLUDEDIR)
 	@install -m 644 $(WDIR)/doc/*.3 /usr/share/man/man3/
-	@ln -s /usr/share/man/man3/config_open.3 /usr/share/man/man3/config_fdopen.3
-	@ln -s /usr/share/man/man3/config_open.3 /usr/share/man/man3/config_reopen.3
-	@ln -s /usr/share/man/man3/config_index.3 /usr/share/man/man3/config_index_br.3
-	@ln -s /usr/share/man/man3/config_next.3 /usr/share/man/man3/config_next_br.3
-	@ln -s /usr/share/man/man3/config_search.3 /usr/share/man/man3/config_search_br.3
+	@ln -fs /usr/share/man/man3/config_open.3 /usr/share/man/man3/config_fdopen.3
+	@ln -fs /usr/share/man/man3/config_open.3 /usr/share/man/man3/config_reopen.3
+	@ln -fs /usr/share/man/man3/config_index.3 /usr/share/man/man3/config_index_br.3
+	@ln -fs /usr/share/man/man3/config_next.3 /usr/share/man/man3/config_next_br.3
+	@ln -fs /usr/share/man/man3/config_search.3 /usr/share/man/man3/config_search_br.3
 	@echo Installed manuals for $(TARGET)
 	@echo Done
 
