@@ -5,10 +5,30 @@ It provides a simple interface that should be familiar to anyone who have experi
 
 ## Installation
 ### Building:
+The build process can now be optimally configured for your system automatically using the included configuration script:
+
+	# ./configure
+This script will write the relevant information to the "setup.mk" file in the build directory. If the script is run in a directory other than the one in which it is located, it will generate copies of the appropriate makefiles, preconfigured to allow the library to be built and installed from that directory with out the need to specify the original location. 
+
 The library may be built using 'make', in the same way as many other programs:
 
 	# make
-> NOTES:
+> **NOTES:**
+> **Configure**
+> The included configuration script makes some basic assumptions and choices based of the information it gathers on your system.
+> Much of this can be overridden by setting the appropriate variable beforehand and specifying the corresponding argument.
+>
+> *-d* - Can be used to regenerate the default "setup.mk". This overrides any other options.
+> *-l* - If the LIBDIR variable is set, then it will be set as the target installation directory for the library.
+> *-i* - If the INCLUDEDIR variable is set, then it will be  set as the target installation directory for that library's header file.
+> *-c* - If the CC variable is set, then it will be used as the target compiler.
+>
+> The configuration script will test for available compilers in the following order: clang, gcc, cc.
+> Use *-c* as specified above to override this.
+> 
+> **Make**
+> The library may be built including debugging symbols by using the "debug" target. All other options remain the same.
+>
 > By default libreadconf uses some basic pthread calls to unsure that its signal handling is threadsafe.
 > If you want to disable this for some reason, set CFLAGS to "-D NO_PTHREAD".
 >
@@ -35,6 +55,13 @@ Once you are finished building and installing libreadconf, the Makefile provides
 	# make clean
 This step is not required.
 
+### Uninstallation:
+For your convenience we include a "remove" target for make that, so long as it is run using the same environment as the build and installation steps, will remove all the files installed by "make install":
+
+	# make remove
+This automates the removal of the library, headers, and manpages, all in one step, removing the need to manually fine where they were installed. (You're welcome.)
+>Note: "make clean" does not affect this target.
+
 ## Usage
 The libreadconf library provides seven function to open, read, and look through configuration files.
 
@@ -59,7 +86,7 @@ Read all the data from an open CONFIG, stores it in a keylist, and prepares it t
 * **int config_close(CONFIG \*cfg)**  
 Closes an open CONFIG and frees any memory associated with it.
 
-* **void config_rewind(CONFIG \*cfg)**  
+* **int config_rewind(CONFIG \*cfg)**  
 Rewind the keylist associated with a CONFIG.
 
 * **config_index(CONFIG \*cfg, char \*name, char \*data_buff, unsigned int buff_size, unsigned int index)**  
