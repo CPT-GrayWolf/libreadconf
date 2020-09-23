@@ -1,0 +1,107 @@
+#! /bin/bash
+
+SETCC=true
+SETLIB=true
+SETINCLUDE=true
+MKDEFAULT=false
+WDIR="$(dirname $0)"
+
+for argv
+do
+	case $argv in
+		-d) 
+			echo "Generating default make..."
+			MKDEFAULT=true
+			break;;
+		-l)
+			if ! [ -z $LIBDIR ]
+			then
+				SETLIB=false
+			fi;;
+		-i)
+			if ! [ -z $INCLUDEDIR ]
+			then
+				SETINCLUDE=false
+			fi;;
+		-c)
+			if ! [ -z $CC ]
+			then
+				SETCC=false
+			fi;;
+		 *)
+			1>&2 echo "$0: Invalid option \"$argv\""
+			exit 1;;
+	esac
+done
+
+if [ "$WDIR" != "." ]
+then
+	cp -f "$WDIR/Makefile" "./Makefile"
+fi
+
+if [ $MKDEFAULT == true ]
+then
+	echo "CC = gcc" > setup.mk
+	echo "WDIR = $WDIR" >> setup.mk
+	echo "SUFFIX = " >> setup.mk
+	echo "TARGETDIR = /lib" >> setup.mk
+	echo "INCLUDEDIR = /usr/include" >> setup.mk
+	exit 0
+fi
+
+if [ $SETCC == true ]
+then
+	echo "Checking for compiler..."
+
+	if command -v clang &> /dev/null
+	then
+		CC=clang
+	elif command -v gcc &> /dev/null
+	then
+		CC=gcc
+	elif command -v cc &> /dev/null
+	then
+		CC=cc
+	else
+		1>&2 echo "$0: No compiler detected"
+		exit 1
+	fi
+fi
+
+echo "Using compiler \"$CC\""
+
+if [ $SETLIB == true ]
+then
+	echo "Checking for ideal target directory..."
+
+	if [ "$(uname -m)" == "x86_64" ]
+	then
+		if [ -d "/lib64" ]
+		then
+			LIBDIR="/lib64"
+		else
+			LIBDIR="/lib"
+		fi
+	else
+		LIBDIR="/lib"
+	fi
+fi
+
+echo "Target directory set to \"$LIBDIR\""
+
+if [ $SETINCLUDE == true ]
+then
+	INCLUDEDIR="/usr/include"
+fi
+
+echo "Header folder set to \"$INCLUDEDIR\""
+
+echo "Generating make..."
+
+echo "CC = $CC" > setup.mk
+echo "WDIR = $WDIR" >> setup.mk
+echo "SUFFIX = " >> setup.mk
+echo "TARGETDIR = $LIBDIR" >> setup.mk
+echo "INCLUDEDIR = $INCLUDEDIR" >> setup.mk
+
+echo "Done"
