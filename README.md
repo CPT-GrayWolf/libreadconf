@@ -13,8 +13,8 @@ This script will write the relevant information to the "setup.mk" file in the bu
 The library may be built using 'make', in the same way as many other programs:
 
 	# make
-> **NOTES:**
-> **Configure**
+> **NOTES:**  
+> **Configure:**  
 > The included configuration script makes some basic assumptions and choices based of the information it gathers on your system.
 > Much of this can be overridden by setting the appropriate variable beforehand and specifying the corresponding argument.
 >
@@ -26,7 +26,7 @@ The library may be built using 'make', in the same way as many other programs:
 > The configuration script will test for available compilers in the following order: clang, gcc, cc.
 > Use *-c* as specified above to override this.
 > 
-> **Make**
+> **Make:**  
 > The library may be built including debugging symbols by using the "debug" target. All other options remain the same.
 >
 > By default libreadconf uses some basic pthread calls to unsure that its signal handling is threadsafe.
