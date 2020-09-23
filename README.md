@@ -15,15 +15,15 @@ The library may be built using 'make', in the same way as many other programs:
 	# make
 > **NOTES:**  
 > **Configure:**  
-> The included configuration script makes some basic assumptions and choices based of the information it gathers on your system.
+> The included configuration script makes some basic assumptions and choices based of the information it gathers on your system.  
 > Much of this can be overridden by setting the appropriate variable beforehand and specifying the corresponding argument.
 >
-> *-d* - Can be used to regenerate the default "setup.mk". This overrides any other options.
-> *-l* - If the LIBDIR variable is set, then it will be set as the target installation directory for the library.
-> *-i* - If the INCLUDEDIR variable is set, then it will be  set as the target installation directory for that library's header file.
-> *-c* - If the CC variable is set, then it will be used as the target compiler.
+> *-d* - Can be used to regenerate the default "setup.mk". This overrides any other options.  
+> *-l* - If the LIBDIR variable is set, then it will be set as the target installation directory for the library.  
+> *-i* - If the INCLUDEDIR variable is set, then it will be  set as the target installation directory for that library's header file.  
+> *-c* - If the CC variable is set, then it will be used as the target compiler.  
 >
-> The configuration script will test for available compilers in the following order: clang, gcc, cc.
+> The configuration script will test for available compilers in the following order: clang, gcc, cc.  
 > Use *-c* as specified above to override this.
 > 
 > **Make:**  
