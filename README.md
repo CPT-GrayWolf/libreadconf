@@ -29,13 +29,13 @@ The library may be built using 'make', in the same way as many other programs:
 > **Make:**  
 > The library may be built including debugging symbols by using the "debug" target. All other options remain the same.
 >
-> By default libreadconf uses some basic pthread calls to unsure that its signal handling is threadsafe.
+> By default libreadconf uses some basic pthread calls to unsure that its signal handling is threadsafe.  
 > If you want to disable this for some reason, set CFLAGS to "-D NO_PTHREAD".
 >
 > If you want to add custom compiler flags, but compile with pthread options enabled, be sure to include the "-pthread" option in your flags, or the library will not compile.
 >
-> By default libreadconf has a minimum buffer size. 
-> If the block size for a file is below this size, the block size will be ignored, and the minimum buffer size is used. This may be beneficial in some case, but may waste resources in others.
+> By default libreadconf has a minimum buffer size.  
+> If the block size for a file is below this size, the block size will be ignored, and the minimum buffer size is used. This may be beneficial in some case, but may waste resources in others.  
 > To disable minimum buffer size, include the "-D NO_MIN_BUFF" option in CFLAGS.
 
 If all goes well, you should see a nice clean compilation, free of any errors or warnings.
@@ -45,9 +45,9 @@ The library can, again, be installed using 'make':
 
 	# make install
 This will install the library, header, and all its included manpages, for your convenience.
-> NOTES:
-> By default, the included Makefile assumes the .so file will be installed in "/lib". If you need/wish it to be installed elsewhere, this can be set using the TARGETDIR option.
-> Similarly if you wish the header file to be installed somewhere other than "/usr/include", This may be set using the INCLUDEDIR option.
+> NOTES:  
+> The default directories are now handled by the included configuration script.  
+> See above.
 
 ### Cleanup:
 Once you are finished building and installing libreadconf, the Makefile provides you with an option to clean up any files left over from the build process:
@@ -60,7 +60,8 @@ For your convenience we include a "remove" target for make that, so long as it i
 
 	# make remove
 This automates the removal of the library, headers, and manpages, all in one step, removing the need to manually fine where they were installed. (You're welcome.)
->Note: "make clean" does not affect this target.
+> Note:  
+> "make clean" does not affect this target.
 
 ## Usage
 The libreadconf library provides seven function to open, read, and look through configuration files.
