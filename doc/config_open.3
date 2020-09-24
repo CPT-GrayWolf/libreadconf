@@ -74,7 +74,14 @@ The
 function may also fail and set
 .I errno
 for any of the errors specified for the routine
-.BR fclose (3).
+.BR fclose(3).
+.PP
+The
+.BR config_fdopen()
+function may also fail and set
+.I errno
+for any of the errors specified for the routine
+.BR fcntl(2).
 .SH NOTES
 .SS libreadconf notes.
 See 
