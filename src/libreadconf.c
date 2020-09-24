@@ -479,6 +479,16 @@ CONFIG *config_fdopen(int fd)
 	if(!set_sigmask(SIGMASK_SET))
 		return NULL;
 
+	int flags = fcntl(fd, F_GETFL);
+	if(flags == -1)
+		return NULL;
+	else if((flags & O_WRONLY))
+	{
+		errno = EBADF;
+		return NULL;
+	}
+
+
 	CONFIG *init = malloc(sizeof(CONFIG));
 	if(init == NULL)
 	{
