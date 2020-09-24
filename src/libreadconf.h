@@ -17,6 +17,9 @@
 #ifndef LIBREADCONF_H
 #define LIBREADCONF_H
 
+// Used to determine the options supported by the current version.
+#define _LIBREADCONF_VSPEC_ 10000
+
 #define CONFIG_MAX_KEY 64
 
 #ifdef __cplusplus

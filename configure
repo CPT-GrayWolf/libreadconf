@@ -96,11 +96,21 @@ fi
 
 echo "Header folder set to \"$INCLUDEDIR\""
 
+echo "Checking for release information..."
+
+if [ -f "$WDIR/release" ]
+then
+	VERSION=$(cat "$WDIR/release")
+	echo "Release version is $VERSION"
+else
+	echo "No release version for current build"
+fi
+
 echo "Generating make..."
 
 echo "CC = $CC" > setup.mk
 echo "WDIR = $WDIR" >> setup.mk
-echo "SUFFIX = " >> setup.mk
+echo "SUFFIX = $VERSION" >> setup.mk
 echo "TARGETDIR = $LIBDIR" >> setup.mk
 echo "INCLUDEDIR = $INCLUDEDIR" >> setup.mk
 

@@ -20,7 +20,7 @@ debug:
 
 install:
 ifneq ($(strip $(SUFFIX)),)
-	@install -m 755 $(TARGET).so $(TARGETDIR)/$(TARGET).so$(SUFFIX)
+	@install -m 755 $(TARGET).so $(TARGETDIR)/$(TARGET).so.$(SUFFIX)
 	@ln -fs $(TARGETDIR)/$(TARGET).so.$(SUFFIX) $(TARGETDIR)/$(TARGET).so
 else
 	@install -m 755 $(TARGET).so $(TARGETDIR)/$(TARGET).so
