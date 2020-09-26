@@ -22,7 +22,9 @@ and their by-reference counterparts.
 .SH RETURN VALUE
 Uppon success,
 .BR config_rewind()
-returns 1. On error, it returns 0.
+returns 1. On error, it returns 0 and sets
+.I errno
+to a value indicating the error.
 .SH ERRORS
 .PP
 The 
