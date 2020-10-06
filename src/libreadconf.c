@@ -335,7 +335,7 @@ static int key_parse(k_list *restrict key)
 		return -1;
 	}
 
-	char is_key = 1;
+	char is_empty = 0, is_key = 0;
 	size_t position;
 	       
 	ssize_t	start = -1, end;
@@ -385,6 +385,8 @@ static int key_parse(k_list *restrict key)
 		memmove(key->value, (key->value + start), (end - start));
 		key->value[end - start] = '\0';
 	}
+	else if(start < 0)
+		is_empty = 1;
 	else
 		key->value[end - start] = '\0';
 
@@ -395,7 +397,7 @@ static int key_parse(k_list *restrict key)
 	// in some cases.
 	//
 	// Should we include a directive to skip this step?
-	if(!strlen(key->value) && is_key)
+	if(is_empty && !is_key)
 	{
 		tmp = realloc(key->name, (strlen(key->name) + 3));
 		if (tmp != NULL)
@@ -406,7 +408,7 @@ static int key_parse(k_list *restrict key)
 		key->value[0] = '\n';
 		key->value[1] = '\0';
 	}
-	if(!strlen(key->value) && !is_key)
+	if(is_empty && is_key)
 	{
 		tmp = realloc(key->name, (strlen(key->name) + 2));
 		if (tmp != NULL)
